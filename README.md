@@ -1,5 +1,5 @@
 
-# **Nephr 🦍** 
+# **Nephr ** 
 Nephr is a HRMS Software.
 
 ## **Installation**
