@@ -5,10 +5,10 @@ from django.db import models
 from django.utils import timezone
 from django.core.management import call_command
 from dynamic_fields.df_not_allowed_models import DF_NOT_ALLOWED_MODELS
-from horilla.horilla_middlewares import _thread_locals
+from nephr.nephr_middlewares import _thread_locals
 
 
-from horilla_automations.methods.methods import get_model_class
+from nephr_automations.methods.methods import get_model_class
 
 
 logger = logging.getLogger(__name__)
@@ -144,7 +144,7 @@ class DynamicField(models.Model):
     def save(self, *args, **kwargs):
         # instance = self
         is_create = self.pk is None
-        # hdf -> horilla_dynamic_field
+        # hdf -> nephr_dynamic_field
         field_name = "hdf_" + self.verbose_name.lower().replace(" ", "_")
 
         if is_create:

@@ -62,9 +62,9 @@ from base.methods import (
 from base.models import Company, EmployeeShift
 from employee.filters import EmployeeFilter
 from employee.models import Employee
-from horilla import horilla_middlewares
-from horilla_widgets.widgets.horilla_multi_select_field import HorillaMultiSelectField
-from horilla_widgets.widgets.select_widgets import HorillaMultiSelectWidget
+from nephr import nephr_middlewares
+from nephr_widgets.widgets.nephr_multi_select_field import NephrMultiSelectField
+from nephr_widgets.widgets.select_widgets import NephrMultiSelectWidget
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ class ModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         reload_queryset(self.fields)
-        request = getattr(horilla_middlewares._thread_locals, "request", None)
+        request = getattr(nephr_middlewares._thread_locals, "request", None)
 
         for field_name, field in self.fields.items():
             widget = field.widget
@@ -276,9 +276,9 @@ class AttendanceForm(ModelForm):
     Model form for Attendance model
     """
 
-    employee_id = HorillaMultiSelectField(
+    employee_id = NephrMultiSelectField(
         queryset=Employee.objects.filter(employee_work_info__isnull=False),
-        widget=HorillaMultiSelectWidget(
+        widget=NephrMultiSelectWidget(
             filter_route_name="employee-widget-filter",
             filter_class=EmployeeFilter,
             filter_instance_contex_name="f",
@@ -854,7 +854,7 @@ excluded_fields = [
     "request_type",
     "month_sequence",
     "objects",
-    "horilla_history",
+    "nephr_history",
 ]
 
 
@@ -1172,7 +1172,7 @@ class BulkAttendanceRequestForm(ModelForm):
         )
 
     def __init__(self, *args, **kwargs):
-        request = getattr(horilla_middlewares._thread_locals, "request", None)
+        request = getattr(nephr_middlewares._thread_locals, "request", None)
         employee = request.user.employee_get
         super().__init__(*args, **kwargs)
         if employee and hasattr(employee, "employee_work_info"):

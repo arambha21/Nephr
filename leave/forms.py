@@ -1,5 +1,5 @@
 """
-This module provides Horilla ModelForms for creating and managing leave-related data,
+This module provides Nephr ModelForms for creating and managing leave-related data,
 including leave type, leave request, leave allocation request, holidays and company leaves.
 """
 
@@ -23,10 +23,10 @@ from base.models import CompanyLeaves, Holidays
 from employee.filters import EmployeeFilter
 from employee.forms import MultipleFileField
 from employee.models import Employee
-from horilla import horilla_middlewares
-from horilla_widgets.forms import HorillaForm, HorillaModelForm
-from horilla_widgets.widgets.horilla_multi_select_field import HorillaMultiSelectField
-from horilla_widgets.widgets.select_widgets import HorillaMultiSelectWidget
+from nephr import nephr_middlewares
+from nephr_widgets.forms import NephrForm, NephrModelForm
+from nephr_widgets.widgets.nephr_multi_select_field import NephrMultiSelectField
+from nephr_widgets.widgets.select_widgets import NephrMultiSelectWidget
 from leave.methods import (
     calculate_requested_days,
     company_leave_dates_list,
@@ -64,7 +64,7 @@ class ModelForm(forms.ModelForm):
         based on the current request, particularly for 'employee_id' and 'company_id' fields.
         """
         super().__init__(*args, **kwargs)
-        request = getattr(horilla_middlewares._thread_locals, "request", None)
+        request = getattr(nephr_middlewares._thread_locals, "request", None)
         reload_queryset(self.fields)
         for field_name, field in self.fields.items():
             widget = field.widget
@@ -113,7 +113,7 @@ class ModelForm(forms.ModelForm):
 class ConditionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        request = getattr(horilla_middlewares._thread_locals, "request", None)
+        request = getattr(nephr_middlewares._thread_locals, "request", None)
         reload_queryset(self.fields)
         for field_name, field in self.fields.items():
             widget = field.widget
@@ -161,9 +161,9 @@ class ConditionForm(forms.ModelForm):
 
 class LeaveTypeForm(ConditionForm):
 
-    employee_id = HorillaMultiSelectField(
+    employee_id = NephrMultiSelectField(
         queryset=Employee.objects.all(),
-        widget=HorillaMultiSelectWidget(
+        widget=NephrMultiSelectWidget(
             filter_route_name="employee-widget-filter",
             filter_class=EmployeeFilter,
             filter_instance_contex_name="f",
@@ -424,7 +424,7 @@ class LeaveRequestCreationForm(ModelForm):
         Render the form fields as HTML table rows with Bootstrap styling.
         """
         context = {"form": self}
-        table_html = render_to_string("horilla_form.html", context)
+        table_html = render_to_string("nephr_form.html", context)
         return table_html
 
     class Meta:
@@ -553,7 +553,7 @@ class LeaveRequestUpdationForm(ModelForm):
         Render the form fields as HTML table rows with Bootstrap styling.
         """
         context = {"form": self}
-        table_html = render_to_string("horilla_form.html", context)
+        table_html = render_to_string("nephr_form.html", context)
         return table_html
 
     class Meta:
@@ -598,7 +598,7 @@ class AvailableLeaveForm(ModelForm):
         fields = ["leave_type_id", "employee_id", "is_active"]
 
 
-class LeaveOneAssignForm(HorillaModelForm):
+class LeaveOneAssignForm(NephrModelForm):
     """
     Form for assigning available leave to employees.
 
@@ -606,12 +606,12 @@ class LeaveOneAssignForm(HorillaModelForm):
     by specifying the employee and setting the is_active flag.
 
     Attributes:
-        - employee_id: A HorillaMultiSelectField representing the employee to assign leave to.
+        - employee_id: A NephrMultiSelectField representing the employee to assign leave to.
     """
 
-    employee_id = HorillaMultiSelectField(
+    employee_id = NephrMultiSelectField(
         queryset=Employee.objects.all(),
-        widget=HorillaMultiSelectWidget(
+        widget=NephrMultiSelectWidget(
             filter_route_name="employee-widget-filter",
             filter_class=EmployeeFilter,
             filter_instance_contex_name="f",
@@ -768,7 +768,7 @@ class UserLeaveRequestForm(ModelForm):
         Render the form fields as HTML table rows with Bootstrap styling.
         """
         context = {"form": self}
-        table_html = render_to_string("horilla_form.html", context)
+        table_html = render_to_string("nephr_form.html", context)
         return table_html
 
     class Meta:
@@ -870,7 +870,7 @@ class UserLeaveRequestCreationForm(ModelForm):
         Render the form fields as HTML table rows with Bootstrap styling.
         """
         context = {"form": self}
-        table_html = render_to_string("horilla_form.html", context)
+        table_html = render_to_string("nephr_form.html", context)
         return table_html
 
     def __init__(self, *args, **kwargs):
@@ -989,7 +989,7 @@ class LeaveAllocationRequestForm(ModelForm):
         Render the form fields as HTML table rows with Bootstrap styling.
         """
         context = {"form": self}
-        table_html = render_to_string("horilla_form.html", context)
+        table_html = render_to_string("nephr_form.html", context)
         return table_html
 
     class Meta:
@@ -1068,7 +1068,7 @@ class LeaveRequestExportForm(forms.Form):
     )
 
 
-class AssignLeaveForm(HorillaForm):
+class AssignLeaveForm(NephrForm):
     """
     Form for Payslip
     """
@@ -1082,9 +1082,9 @@ class AssignLeaveForm(HorillaForm):
         label="Leave Type",
         required=False,
     )
-    employee_id = HorillaMultiSelectField(
+    employee_id = NephrMultiSelectField(
         queryset=Employee.objects.all(),
-        widget=HorillaMultiSelectWidget(
+        widget=NephrMultiSelectWidget(
             filter_route_name="employee-widget-filter",
             filter_class=EmployeeFilter,
             filter_instance_contex_name="f",
@@ -1308,7 +1308,7 @@ if apps.is_installed("attendance"):
         def __init__(self, *args, **kwargs):
             super(CompensatoryLeaveForm, self).__init__(*args, **kwargs)
 
-            request = getattr(horilla_middlewares._thread_locals, "request", None)
+            request = getattr(nephr_middlewares._thread_locals, "request", None)
             instance_id = None
             if self.instance:
                 instance_id = self.instance.id
@@ -1347,7 +1347,7 @@ if apps.is_installed("attendance"):
             Render the form fields as HTML table rows with Bootstrap styling.
             """
             context = {"form": self}
-            table_html = render_to_string("horilla_form.html", context)
+            table_html = render_to_string("nephr_form.html", context)
             return table_html
 
         def clean(self):

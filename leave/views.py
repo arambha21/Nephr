@@ -38,7 +38,7 @@ from base.methods import (
 )
 from base.models import CompanyLeaves, Holidays, PenaltyAccounts
 from employee.models import Employee
-from horilla.decorators import (
+from nephr.decorators import (
     hx_request_required,
     logger,
     login_required,
@@ -46,9 +46,9 @@ from horilla.decorators import (
     owner_can_enter,
     permission_required,
 )
-from horilla.group_by import group_by_queryset
-from horilla.horilla_settings import DYNAMIC_URL_PATTERNS
-from horilla.methods import get_horilla_model_class, remove_dynamic_url
+from nephr.group_by import group_by_queryset
+from nephr.nephr_settings import DYNAMIC_URL_PATTERNS
+from nephr.methods import get_nephr_model_class, remove_dynamic_url
 from leave.decorators import *
 from leave.filters import *
 from leave.forms import *
@@ -556,7 +556,7 @@ def leave_request_view(request):
         for leave_request in leave_requests:
 
             # Fetch interviews for the employee within the requested leave period
-            InterviewSchedule = get_horilla_model_class(
+            InterviewSchedule = get_nephr_model_class(
                 app_label="recruitment", model="interviewschedule"
             )
 
@@ -646,7 +646,7 @@ def leave_request_filter(request):
         for leave_request in leave_requests:
 
             # Fetch interviews for the employee within the requested leave period
-            InterviewSchedule = get_horilla_model_class(
+            InterviewSchedule = get_nephr_model_class(
                 app_label="recruitment", model="interviewschedule"
             )
 
@@ -2400,7 +2400,7 @@ def user_request_view(request):
             for leave_request in leave_requests:
 
                 # Fetch interviews for the employee within the requested leave period
-                InterviewSchedule = get_horilla_model_class(
+                InterviewSchedule = get_nephr_model_class(
                     app_label="recruitment", model="interviewschedule"
                 )
 
@@ -2476,7 +2476,7 @@ def user_request_filter(request):
             for leave_request in leave_requests:
 
                 # Fetch interviews for the employee within the requested leave period
-                InterviewSchedule = get_horilla_model_class(
+                InterviewSchedule = get_nephr_model_class(
                     app_label="recruitment", model="interviewschedule"
                 )
 
@@ -4991,7 +4991,7 @@ if apps.is_installed("recruitment"):
             date_list = [
                 start_date_obj + timedelta(days=i) for i in range(delta.days + 1)
             ]
-            InterviewSchedule = get_horilla_model_class(
+            InterviewSchedule = get_nephr_model_class(
                 app_label="recruitment", model="interviewschedule"
             )
 

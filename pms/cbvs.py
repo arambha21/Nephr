@@ -8,9 +8,9 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _trans
 
 from base.methods import filter_own_and_subordinate_recordes, is_reportingmanager
-from horilla import horilla_middlewares
-from horilla.decorators import login_required, permission_required
-from horilla_views.generic.cbv import views
+from nephr import nephr_middlewares
+from nephr.decorators import login_required, permission_required
+from nephr_views.generic.cbv import views
 from pms import models
 from pms.filters import BonusPointSettingFilter, EmployeeBonusPointFilter
 from pms.forms import BonusPointSettingForm, EmployeeBonusPointForm
@@ -19,7 +19,7 @@ from pms.forms import BonusPointSettingForm, EmployeeBonusPointForm
 # ================Models for BonusPointSetting==============
 @method_decorator(login_required, name="dispatch")
 @method_decorator(permission_required("pms.view_bonuspointsetting"), name="dispatch")
-class BonusPointSettingSectionView(views.HorillaSectionView):
+class BonusPointSettingSectionView(views.NephrSectionView):
     """
     BonusPointSetting SectionView
     """
@@ -37,7 +37,7 @@ class BonusPointSettingSectionView(views.HorillaSectionView):
 
 @method_decorator(login_required, name="dispatch")
 @method_decorator(permission_required("pms.view_bonuspointsetting"), name="dispatch")
-class BonusPointSettingNavView(views.HorillaNavView):
+class BonusPointSettingNavView(views.NephrNavView):
     """
     BonusPointSetting nav view
     """
@@ -58,7 +58,7 @@ class BonusPointSettingNavView(views.HorillaNavView):
 
 @method_decorator(login_required, name="dispatch")
 @method_decorator(permission_required("pms.change_bonuspointsetting"), name="dispatch")
-class BonusPointSettingFormView(views.HorillaFormView):
+class BonusPointSettingFormView(views.NephrFormView):
     """
     BonusPointSettingForm View
     """
@@ -102,7 +102,7 @@ class BonusPointSettingFormView(views.HorillaFormView):
 
 @method_decorator(login_required, name="dispatch")
 @method_decorator(permission_required("pms.view_bonuspointsetting"), name="dispatch")
-class BonusPointSettingListView(views.HorillaListView):
+class BonusPointSettingListView(views.NephrListView):
     """
     BnusPointSetting list view
     """
@@ -125,7 +125,7 @@ class BonusPointSettingListView(views.HorillaListView):
 # ================Models for EmployeeBonusPoint==============
 
 
-class EmployeeBonusPointSectionView(views.HorillaSectionView):
+class EmployeeBonusPointSectionView(views.NephrSectionView):
     """
     EmployeeBonusPoint SectionView
     """
@@ -141,7 +141,7 @@ class EmployeeBonusPointSectionView(views.HorillaSectionView):
     template_name = "bonus/employee_bonus_point_section.html"
 
 
-class EmployeeBonusPointNavView(views.HorillaNavView):
+class EmployeeBonusPointNavView(views.NephrNavView):
     """
     BonusPoint nav view
     """
@@ -183,7 +183,7 @@ class EmployeeBonusPointNavView(views.HorillaNavView):
 
 @method_decorator(login_required, name="dispatch")
 @method_decorator(permission_required("pms.change_employeebonuspoint"), name="dispatch")
-class EmployeeBonusPointFormView(views.HorillaFormView):
+class EmployeeBonusPointFormView(views.NephrFormView):
     """
     BonusPointForm View
     """
@@ -224,7 +224,7 @@ class EmployeeBonusPointFormView(views.HorillaFormView):
         return super().form_valid(form)
 
 
-class EmployeeBonusPointListView(views.HorillaListView):
+class EmployeeBonusPointListView(views.NephrListView):
     """
     BnusPoint list view
     """
@@ -255,7 +255,7 @@ class EmployeeBonusPointListView(views.HorillaListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        request = getattr(horilla_middlewares._thread_locals, "request", None)
+        request = getattr(nephr_middlewares._thread_locals, "request", None)
         if is_reportingmanager(request) or request.user.has_perm(
             "pms.view_employeebonuspoint"
         ):

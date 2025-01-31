@@ -127,8 +127,8 @@ def config_perms(user):
             "leave.view_restrictleave",
         ],
         "base": [
-            "base.add_horillamailtemplates",
-            "base.view_horillamailtemplates",
+            "base.add_nephrmailtemplates",
+            "base.view_nephrmailtemplates",
         ],
     }
 

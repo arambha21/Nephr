@@ -19,7 +19,7 @@ from django.dispatch import receiver
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as trans
 
-from base.horilla_company_manager import HorillaCompanyManager
+from base.nephr_company_manager import NephrCompanyManager
 from base.models import (
     Company,
     Department,
@@ -31,11 +31,11 @@ from base.models import (
     validate_time_format,
 )
 from employee.methods.duration_methods import format_time, strtime_seconds
-from horilla import horilla_middlewares
-from horilla.methods import get_horilla_model_class
-from horilla.models import HorillaModel
-from horilla_audit.methods import get_diff
-from horilla_audit.models import HorillaAuditInfo, HorillaAuditLog
+from nephr import nephr_middlewares
+from nephr.methods import get_nephr_model_class
+from nephr.models import NephrModel
+from nephr_audit.methods import get_diff
+from nephr_audit.models import NephrAuditInfo, NephrAuditLog
 
 # create your model
 
@@ -110,7 +110,7 @@ class Employee(models.Model):
     is_directly_converted = models.BooleanField(
         default=False, null=True, blank=True, editable=False
     )
-    objects = HorillaCompanyManager(
+    objects = NephrCompanyManager(
         related_company_field="employee_work_info__company_id"
     )
 
@@ -313,16 +313,16 @@ class Employee(models.Model):
         a dictionary is returned with a list of related models of that employee.
         """
         if apps.is_installed("onboarding"):
-            OnboardingStage = get_horilla_model_class("onboarding", "onboardingstage")
-            OnboardingTask = get_horilla_model_class("onboarding", "onboardingtask")
+            OnboardingStage = get_nephr_model_class("onboarding", "onboardingstage")
+            OnboardingTask = get_nephr_model_class("onboarding", "onboardingtask")
             onboarding_stage_query = OnboardingStage.objects.filter(employee_id=self.pk)
             onboarding_task_query = OnboardingTask.objects.filter(employee_id=self.pk)
         else:
             onboarding_stage_query = None
             onboarding_task_query = None
         if apps.is_installed("recruitment"):
-            Recruitment = get_horilla_model_class("recruitment", "recruitment")
-            Stage = get_horilla_model_class("recruitment", "stage")
+            Recruitment = get_nephr_model_class("recruitment", "recruitment")
+            Stage = get_nephr_model_class("recruitment", "stage")
             recruitment_stage_query = Stage.objects.filter(stage_managers=self.pk)
             recruitment_manager_query = Recruitment.objects.filter(
                 recruitment_managers=self.pk
@@ -409,8 +409,8 @@ class Employee(models.Model):
         This method is used to check if the user is in the list of online users.
         """
         if apps.is_installed("attendance"):
-            Attendance = get_horilla_model_class("attendance", "attendance")
-            request = getattr(horilla_middlewares._thread_locals, "request", None)
+            Attendance = get_nephr_model_class("attendance", "attendance")
+            request = getattr(nephr_middlewares._thread_locals, "request", None)
 
             if request is not None:
                 if (
@@ -490,7 +490,7 @@ class Employee(models.Model):
         # call the parent class's save method to save the object
         prev_employee = Employee.objects.filter(id=self.id).first()
         super().save(*args, **kwargs)
-        request = getattr(horilla_middlewares._thread_locals, "request", None)
+        request = getattr(nephr_middlewares._thread_locals, "request", None)
         if request and not self.is_active and self.get_archive_condition() is not False:
             self.is_active = True
             super().save(*args, **kwargs)
@@ -530,7 +530,7 @@ class Employee(models.Model):
         return self
 
 
-class EmployeeTag(HorillaModel):
+class EmployeeTag(NephrModel):
     """
     EmployeeTag Model
     """
@@ -638,13 +638,13 @@ class EmployeeWorkInformation(models.Model):
     )
     additional_info = models.JSONField(null=True, blank=True)
     experience = models.FloatField(null=True, blank=True, default=0)
-    history = HorillaAuditLog(
+    history = NephrAuditLog(
         related_name="history_set",
         bases=[
-            HorillaAuditInfo,
+            NephrAuditInfo,
         ],
     )
-    objects = HorillaCompanyManager()
+    objects = NephrCompanyManager()
 
     def __str__(self) -> str:
         return f"{self.employee_id} - {self.job_position_id}"
@@ -685,7 +685,7 @@ class EmployeeWorkInformation(models.Model):
         return self
 
 
-class EmployeeBankDetails(HorillaModel):
+class EmployeeBankDetails(NephrModel):
     """
     EmployeeBankDetails model
     """
@@ -714,7 +714,7 @@ class EmployeeBankDetails(HorillaModel):
         max_length=50, null=True, blank=True, verbose_name="Bank Code #2"
     )
     additional_info = models.JSONField(null=True, blank=True)
-    objects = HorillaCompanyManager(
+    objects = NephrCompanyManager(
         related_company_field="employee_id__employee_work_info__company_id"
     )
 
@@ -736,7 +736,7 @@ class EmployeeBankDetails(HorillaModel):
                 )
 
 
-class NoteFiles(HorillaModel):
+class NoteFiles(NephrModel):
     files = models.FileField(upload_to="employee/NoteFiles", blank=True, null=True)
     objects = models.Manager()
 
@@ -744,7 +744,7 @@ class NoteFiles(HorillaModel):
         return self.files.name.split("/")[-1]
 
 
-class EmployeeNote(HorillaModel):
+class EmployeeNote(NephrModel):
     """
     EmployeeNote model
     """
@@ -759,7 +759,7 @@ class EmployeeNote(HorillaModel):
     )
     note_files = models.ManyToManyField(NoteFiles, blank=True)
     updated_by = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    objects = HorillaCompanyManager(
+    objects = NephrCompanyManager(
         related_company_field="employee_id__employee_work_info__company_id"
     )
 
@@ -767,7 +767,7 @@ class EmployeeNote(HorillaModel):
         return f"{self.description}"
 
 
-class PolicyMultipleFile(HorillaModel):
+class PolicyMultipleFile(NephrModel):
     """
     PoliciesMultipleFile model
     """
@@ -775,7 +775,7 @@ class PolicyMultipleFile(HorillaModel):
     attachment = models.FileField(upload_to="employee/policies")
 
 
-class Policy(HorillaModel):
+class Policy(NephrModel):
     """
     Policies model
     """
@@ -787,14 +787,14 @@ class Policy(HorillaModel):
     attachments = models.ManyToManyField(PolicyMultipleFile, blank=True)
     company_id = models.ManyToManyField(Company, blank=True, verbose_name=_("Company"))
 
-    objects = HorillaCompanyManager("company_id")
+    objects = NephrCompanyManager("company_id")
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
         self.attachments.all().delete()
 
 
-class BonusPoint(HorillaModel):
+class BonusPoint(NephrModel):
     """
     Model representing bonus points for employees with associated conditions.
     """
@@ -821,13 +821,13 @@ class BonusPoint(HorillaModel):
     )
     redeeming_points = models.IntegerField(blank=True, null=True)
     reason = models.TextField(blank=True, null=True, max_length=255)
-    history = HorillaAuditLog(
+    history = NephrAuditLog(
         related_name="history_set",
         bases=[
-            HorillaAuditInfo,
+            NephrAuditInfo,
         ],
     )
-    objects = HorillaCompanyManager(
+    objects = NephrCompanyManager(
         related_company_field="employee_id__employee_work_info__company_id"
     )
 
@@ -855,7 +855,7 @@ class BonusPoint(HorillaModel):
             BonusPoint.objects.create(employee_id=instance)
 
 
-class Actiontype(HorillaModel):
+class Actiontype(NephrModel):
     """
     Action type model
     """
@@ -882,7 +882,7 @@ class Actiontype(HorillaModel):
         verbose_name_plural = _("Action Types")
 
 
-class DisciplinaryAction(HorillaModel):
+class DisciplinaryAction(NephrModel):
     """
     Disciplinary model
     """
@@ -903,7 +903,7 @@ class DisciplinaryAction(HorillaModel):
     attachment = models.FileField(
         upload_to="employee/discipline", null=True, blank=True
     )
-    objects = HorillaCompanyManager("employee_id__employee_work_info__company_id")
+    objects = NephrCompanyManager("employee_id__employee_work_info__company_id")
 
     def __str__(self) -> str:
         return f"{self.action}"
@@ -912,17 +912,17 @@ class DisciplinaryAction(HorillaModel):
         ordering = ["-id"]
 
 
-class EmployeeGeneralSetting(HorillaModel):
+class EmployeeGeneralSetting(NephrModel):
     """
     EmployeeGeneralSetting
     """
 
     badge_id_prefix = models.CharField(max_length=5, default="PEP")
     company_id = models.ForeignKey(Company, null=True, on_delete=models.CASCADE)
-    objects = HorillaCompanyManager("company_id")
+    objects = NephrCompanyManager("company_id")
 
 
-class ProfileEditFeature(HorillaModel):
+class ProfileEditFeature(NephrModel):
     """
     ProfileEditFeature
     """

@@ -7,17 +7,17 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.contrib import messages
 from django.views.generic import View
-from horilla_views.generic.cbv.views import HorillaFormView
+from nephr_views.generic.cbv.views import NephrFormView
 from dynamic_fields import models, forms
 from dynamic_fields.methods import structured
-from horilla.decorators import login_required, permission_required
+from nephr.decorators import login_required, permission_required
 
 
 @method_decorator(login_required, name="dispatch")
 @method_decorator(
     permission_required("dynamic_fields.change_mailautomation"), name="dispatch"
 )
-class ChoiceFormView(HorillaFormView):
+class ChoiceFormView(NephrFormView):
     """
     ChoiceFormView
     """
@@ -31,7 +31,7 @@ class ChoiceFormView(HorillaFormView):
 @method_decorator(
     permission_required("dynamic_fields.change_mailautomation"), name="dispatch"
 )
-class DynamicFieldFormView(HorillaFormView):
+class DynamicFieldFormView(NephrFormView):
     """
     DynamicFieldFormView
     """

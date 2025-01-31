@@ -50,18 +50,18 @@ from base.methods import (
     get_key_instances,
     sortby,
 )
-from base.models import EmailLog, HorillaMailTemplate, JobPosition, clear_messages
+from base.models import EmailLog, NephrMailTemplate, JobPosition, clear_messages
 from employee.models import Employee, EmployeeWorkInformation
 from employee.views import get_content_type
-from horilla import settings
-from horilla.decorators import (
+from nephr import settings
+from nephr.decorators import (
     hx_request_required,
     logger,
     login_required,
     permission_required,
 )
-from horilla.group_by import group_by_queryset
-from horilla_documents.models import Document
+from nephr.group_by import group_by_queryset
+from nephr_documents.models import Document
 from notifications.signals import notify
 from recruitment.auth import CandidateAuthenticationBackend
 from recruitment.decorators import (
@@ -1772,7 +1772,7 @@ def form_send_mail(request, cand_id=None):
     else:
         stage_id = None
 
-    templates = HorillaMailTemplate.objects.all()
+    templates = NephrMailTemplate.objects.all()
     return render(
         request,
         "pipeline/pipeline_components/send_mail.html",
@@ -1983,7 +1983,7 @@ def send_acknowledgement(request):
     template_attachment_ids = request.POST.getlist("template_attachments")
     for candidate in candidates:
         bodys = list(
-            HorillaMailTemplate.objects.filter(
+            NephrMailTemplate.objects.filter(
                 id__in=template_attachment_ids
             ).values_list("body", flat=True)
         )

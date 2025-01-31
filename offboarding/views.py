@@ -15,14 +15,14 @@ from base.context_processors import intial_notice_period
 from base.methods import closest_numbers, eval_validate, paginator_qry, sortby
 from base.views import general_settings
 from employee.models import Employee
-from horilla.decorators import (
+from nephr.decorators import (
     hx_request_required,
     login_required,
     manager_can_enter,
     permission_required,
 )
-from horilla.group_by import group_by_queryset as group_by
-from horilla.methods import get_horilla_model_class
+from nephr.group_by import group_by_queryset as group_by
+from nephr.methods import get_nephr_model_class
 from notifications.signals import notify
 from offboarding.decorators import (
     any_manager_can_enter,
@@ -856,7 +856,7 @@ def update_status(request):
     status = request.GET["status"]
     offboarding_id = request.GET.get("offboarding_id")
     default_notice_end = (
-        get_horilla_model_class(
+        get_nephr_model_class(
             app_label="payroll", model="payrollgeneralsetting"
         ).objects.first()
         if apps.is_installed("payroll")
@@ -958,7 +958,7 @@ def get_notice_period(request):
     """
     employee_id = request.GET["employee_id"]
     if apps.is_installed("payroll"):
-        Contract = get_horilla_model_class(app_label="payroll", model="contract")
+        Contract = get_nephr_model_class(app_label="payroll", model="contract")
         employee_contract = (
             (
                 Contract.objects.order_by("-id")

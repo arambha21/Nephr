@@ -18,7 +18,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from base.horilla_company_manager import HorillaCompanyManager
+from base.nephr_company_manager import NephrCompanyManager
 from base.methods import get_date_range
 from base.models import (
     Company,
@@ -30,11 +30,11 @@ from base.models import (
     clear_messages,
 )
 from employee.models import Employee, EmployeeWorkInformation
-from horilla import horilla_middlewares
-from horilla.methods import get_horilla_model_class
-from horilla.models import HorillaModel
-from horilla_audit.methods import get_diff
-from horilla_audit.models import HorillaAuditInfo, HorillaAuditLog
+from nephr import nephr_middlewares
+from nephr.methods import get_nephr_model_class
+from nephr.models import NephrModel
+from nephr_audit.methods import get_diff
+from nephr_audit.models import NephrAuditInfo, NephrAuditLog
 from leave.methods import calculate_requested_days
 from leave.threading import LeaveClashThread
 
@@ -159,7 +159,7 @@ WEEK_DAYS = [
 ]
 
 
-class LeaveType(HorillaModel):
+class LeaveType(NephrModel):
     icon = models.ImageField(null=True, blank=True, upload_to="leave/leave_icon")
     name = models.CharField(max_length=30, null=False)
     color = models.CharField(null=True, max_length=30)
@@ -209,7 +209,7 @@ class LeaveType(HorillaModel):
     company_id = models.ForeignKey(
         Company, null=True, editable=False, on_delete=models.PROTECT
     )
-    objects = HorillaCompanyManager(related_company_field="company_id")
+    objects = NephrCompanyManager(related_company_field="company_id")
 
     class Meta:
         ordering = ["-id"]
@@ -310,7 +310,7 @@ class LeaveType(HorillaModel):
         return self.name
 
 
-class Holiday(HorillaModel):
+class Holiday(NephrModel):
     name = models.CharField(max_length=30, null=False, verbose_name=_("Name"))
     start_date = models.DateField(verbose_name=_("Start Date"))
     end_date = models.DateField(null=True, blank=True, verbose_name=_("End Date"))
@@ -318,13 +318,13 @@ class Holiday(HorillaModel):
     company_id = models.ForeignKey(
         Company, null=True, editable=False, on_delete=models.PROTECT
     )
-    objects = HorillaCompanyManager(related_company_field="company_id")
+    objects = NephrCompanyManager(related_company_field="company_id")
 
     def __str__(self):
         return self.name
 
 
-class CompanyLeave(HorillaModel):
+class CompanyLeave(NephrModel):
     based_on_week = models.CharField(
         max_length=100, choices=WEEKS, blank=True, null=True
     )
@@ -332,7 +332,7 @@ class CompanyLeave(HorillaModel):
     company_id = models.ForeignKey(
         Company, null=True, editable=False, on_delete=models.PROTECT
     )
-    objects = HorillaCompanyManager(related_company_field="company_id")
+    objects = NephrCompanyManager(related_company_field="company_id")
 
     class Meta:
         unique_together = ("based_on_week", "based_on_week_day")
@@ -344,7 +344,7 @@ class CompanyLeave(HorillaModel):
 from django.db.models import Sum
 
 
-class AvailableLeave(HorillaModel):
+class AvailableLeave(NephrModel):
     employee_id = models.ForeignKey(
         Employee,
         on_delete=models.CASCADE,
@@ -373,13 +373,13 @@ class AvailableLeave(HorillaModel):
     expired_date = models.DateField(
         blank=True, null=True, verbose_name=_("CarryForward Expired Date")
     )
-    objects = HorillaCompanyManager(
+    objects = NephrCompanyManager(
         related_company_field="employee_id__employee_work_info__company_id"
     )
-    history = HorillaAuditLog(
+    history = NephrAuditLog(
         related_name="history_set",
         bases=[
-            HorillaAuditInfo,
+            NephrAuditInfo,
         ],
     )
 
@@ -525,7 +525,7 @@ def restrict_leaves(restri):
     return restricted_dates
 
 
-class LeaveRequest(HorillaModel):
+class LeaveRequest(NephrModel):
     employee_id = models.ForeignKey(
         Employee, on_delete=models.CASCADE, verbose_name=_("Employee")
     )
@@ -573,10 +573,10 @@ class LeaveRequest(HorillaModel):
     reject_reason = models.TextField(
         blank=True, verbose_name=_("Reject Reason"), max_length=255
     )
-    history = HorillaAuditLog(
+    history = NephrAuditLog(
         related_name="history_set",
         bases=[
-            HorillaAuditInfo,
+            NephrAuditInfo,
         ],
     )
     created_by = models.ForeignKey(
@@ -587,7 +587,7 @@ class LeaveRequest(HorillaModel):
         related_name="leave_request_created",
         verbose_name=_("Created By"),
     )
-    objects = HorillaCompanyManager(
+    objects = NephrCompanyManager(
         related_company_field="employee_id__employee_work_info__company_id"
     )
 
@@ -783,7 +783,7 @@ class LeaveRequest(HorillaModel):
             emp_dep = self.employee_id.employee_work_info.department_id
             emp_job = self.employee_id.employee_work_info.job_position_id
 
-        request = getattr(horilla_middlewares._thread_locals, "request", None)
+        request = getattr(nephr_middlewares._thread_locals, "request", None)
         if not request.user.is_superuser:
             if EmployeePastLeaveRestrict.objects.first().enabled:
                 if self.start_date < date.today():
@@ -911,7 +911,7 @@ class LeaveRequest(HorillaModel):
         return result
 
     def is_approved(self):
-        request = getattr(horilla_middlewares._thread_locals, "request", None)
+        request = getattr(nephr_middlewares._thread_locals, "request", None)
         if request:
             employee = Employee.objects.filter(employee_user_id=request.user).first()
             condition_approval = LeaveRequestConditionApproval.objects.filter(
@@ -929,7 +929,7 @@ class LeaveRequest(HorillaModel):
             # Update the leave clashes count for all relevant leave requests
             self.update_leave_clashes_count()
         else:
-            request = getattr(horilla_middlewares._thread_locals, "request", None)
+            request = getattr(nephr_middlewares._thread_locals, "request", None)
             if request:
                 clear_messages(request)
                 messages.warning(
@@ -988,7 +988,7 @@ class LeaverequestFile(models.Model):
     file = models.FileField(upload_to="leave/request_files")
 
 
-class LeaverequestComment(HorillaModel):
+class LeaverequestComment(NephrModel):
     """
     LeaverequestComment Model
     """
@@ -1002,7 +1002,7 @@ class LeaverequestComment(HorillaModel):
         return f"{self.comment}"
 
 
-class LeaveAllocationRequest(HorillaModel):
+class LeaveAllocationRequest(NephrModel):
     leave_type_id = models.ForeignKey(
         LeaveType, on_delete=models.PROTECT, verbose_name="Leave type"
     )
@@ -1019,13 +1019,13 @@ class LeaveAllocationRequest(HorillaModel):
         max_length=30, choices=LEAVE_ALLOCATION_STATUS, default="requested"
     )
     reject_reason = models.TextField(blank=True, max_length=255)
-    history = HorillaAuditLog(
+    history = NephrAuditLog(
         related_name="history_set",
         bases=[
-            HorillaAuditInfo,
+            NephrAuditInfo,
         ],
     )
-    objects = HorillaCompanyManager(
+    objects = NephrCompanyManager(
         related_company_field="employee_id__employee_work_info__company_id"
     )
 
@@ -1061,7 +1061,7 @@ class LeaveAllocationRequest(HorillaModel):
             return None
 
 
-class LeaveallocationrequestComment(HorillaModel):
+class LeaveallocationrequestComment(NephrModel):
     """
     LeaveallocationrequestComment Model
     """
@@ -1083,7 +1083,7 @@ class LeaveRequestConditionApproval(models.Model):
     manager_id = models.ForeignKey(Employee, on_delete=models.CASCADE)
 
 
-class RestrictLeave(HorillaModel):
+class RestrictLeave(NephrModel):
     title = models.CharField(max_length=200)
     start_date = models.DateField(verbose_name=_("Start Date"))
     end_date = models.DateField(verbose_name=_("End Date"))
@@ -1126,7 +1126,7 @@ class RestrictLeave(HorillaModel):
         on_delete=models.CASCADE,
         verbose_name=_("Company"),
     )
-    objects = HorillaCompanyManager(related_company_field="company_id")
+    objects = NephrCompanyManager(related_company_field="company_id")
 
     def __str__(self) -> str:
         return f"{self.title}"
@@ -1134,7 +1134,7 @@ class RestrictLeave(HorillaModel):
 
 if apps.is_installed("attendance"):
 
-    class CompensatoryLeaveRequest(HorillaModel):
+    class CompensatoryLeaveRequest(NephrModel):
         leave_type_id = models.ForeignKey(
             LeaveType, on_delete=models.PROTECT, verbose_name="Leave type"
         )
@@ -1152,13 +1152,13 @@ if apps.is_installed("attendance"):
             max_length=30, choices=LEAVE_ALLOCATION_STATUS, default="requested"
         )
         reject_reason = models.TextField(blank=True, max_length=255)
-        history = HorillaAuditLog(
+        history = NephrAuditLog(
             related_name="history_set",
             bases=[
-                HorillaAuditInfo,
+                NephrAuditInfo,
             ],
         )
-        objects = HorillaCompanyManager(
+        objects = NephrCompanyManager(
             related_company_field="employee_id__employee_work_info__company_id"
         )
 
@@ -1203,7 +1203,7 @@ if apps.is_installed("attendance"):
             super().save(*args, **kwargs)
 
 
-class LeaveGeneralSetting(HorillaModel):
+class LeaveGeneralSetting(NephrModel):
     """
     LeaveGeneralSettings
     """
@@ -1215,7 +1215,7 @@ class LeaveGeneralSetting(HorillaModel):
 
 if apps.is_installed("attendance"):
 
-    class CompensatoryLeaverequestComment(HorillaModel):
+    class CompensatoryLeaverequestComment(NephrModel):
         """
         CompensatoryLeaverequestComment Model
         """
@@ -1231,7 +1231,7 @@ if apps.is_installed("attendance"):
             return f"{self.comment}"
 
 
-class EmployeePastLeaveRestrict(HorillaModel):
+class EmployeePastLeaveRestrict(NephrModel):
     enabled = models.BooleanField(default=True)
 
 
@@ -1248,7 +1248,7 @@ if apps.is_installed("attendance"):
             """
             Overriding LeaveRequest model save method
             """
-            WorkRecords = get_horilla_model_class(
+            WorkRecords = get_nephr_model_class(
                 app_label="attendance", model="workrecords"
             )
             if (

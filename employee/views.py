@@ -107,7 +107,7 @@ from employee.models import (
     EmployeeWorkInformation,
     NoteFiles,
 )
-from horilla.decorators import (
+from nephr.decorators import (
     hx_request_required,
     logger,
     login_required,
@@ -115,18 +115,18 @@ from horilla.decorators import (
     owner_can_enter,
     permission_required,
 )
-from horilla.filters import HorillaPaginator
-from horilla.group_by import group_by_queryset
-from horilla.horilla_settings import HORILLA_DATE_FORMATS
-from horilla.methods import get_horilla_model_class
-from horilla_audit.models import AccountBlockUnblock, HistoryTrackingFields
-from horilla_documents.forms import (
+from nephr.filters import NephrPaginator
+from nephr.group_by import group_by_queryset
+from nephr.nephr_settings import NEPHR_DATE_FORMATS
+from nephr.methods import get_nephr_model_class
+from nephr_audit.models import AccountBlockUnblock, HistoryTrackingFields
+from nephr_documents.forms import (
     DocumentForm,
     DocumentRejectForm,
     DocumentRequestForm,
     DocumentUpdateForm,
 )
-from horilla_documents.models import Document, DocumentRequest
+from nephr_documents.models import Document, DocumentRequest
 from notifications.signals import notify
 
 
@@ -419,7 +419,7 @@ def shift_tab(request, emp_id):
 
 
 @login_required
-@manager_can_enter("horilla_documents.view_documentrequests")
+@manager_can_enter("nephr_documents.view_documentrequests")
 def document_request_view(request):
     """
     This function is used to view documents requests of employees.
@@ -435,7 +435,7 @@ def document_request_view(request):
     documents = Document.objects.filter(document_request_id__isnull=False)
     documents = filtersubordinates(
         request=request,
-        perm="horilla_documents.view_documentrequests",
+        perm="nephr_documents.view_documentrequests",
         queryset=documents,
     )
     documents = group_by_queryset(
@@ -455,7 +455,7 @@ def document_request_view(request):
 
 @login_required
 @hx_request_required
-@manager_can_enter("horilla_documents.view_documentrequests")
+@manager_can_enter("nephr_documents.view_documentrequests")
 def document_filter_view(request):
     """
     This method is used to filter employee.
@@ -488,7 +488,7 @@ def document_filter_view(request):
 
 @login_required
 @hx_request_required
-@manager_can_enter("horilla_documents.add_documentrequests")
+@manager_can_enter("nephr_documents.add_documentrequests")
 def document_request_create(request):
     """
     This function is used to create document requests of an employee in employee requests view.
@@ -499,11 +499,11 @@ def document_request_create(request):
     Returns: return document_request_create_form template
     """
     form = DocumentRequestForm()
-    form = choosesubordinates(request, form, "horilla_documents.add_documentrequest")
+    form = choosesubordinates(request, form, "nephr_documents.add_documentrequest")
     if request.method == "POST":
         form = DocumentRequestForm(request.POST)
         form = choosesubordinates(
-            request, form, "horilla_documents.add_documentrequest"
+            request, form, "nephr_documents.add_documentrequest"
         )
         if form.is_valid():
             form = form.save()
@@ -533,7 +533,7 @@ def document_request_create(request):
 
 @login_required
 @hx_request_required
-@manager_can_enter("horilla_documents.change_documentrequests")
+@manager_can_enter("nephr_documents.change_documentrequests")
 def document_request_update(request, id):
     """
     This function is used to update document requests of an employee in employee requests view.
@@ -567,7 +567,7 @@ def document_request_update(request, id):
 
 @login_required
 @hx_request_required
-@owner_can_enter("horilla_documents.view_document", Employee)
+@owner_can_enter("nephr_documents.view_document", Employee)
 def document_tab(request, emp_id):
     """
     This function is used to view documents tab of an employee in employee individual
@@ -593,7 +593,7 @@ def document_tab(request, emp_id):
 
 @login_required
 @hx_request_required
-@owner_can_enter("horilla_documents.add_document", Employee)
+@owner_can_enter("nephr_documents.add_document", Employee)
 def document_create(request, emp_id):
     """
     This function is used to create documents from employee individual & profile view.
@@ -655,7 +655,7 @@ def document_delete(request, id):
     """
     try:
         document = Document.objects.filter(id=id)
-        if not request.user.has_perm("horilla_documents.delete_document"):
+        if not request.user.has_perm("nephr_documents.delete_document"):
             document = document.filter(
                 employee_id__employee_user_id=request.user
             ).exclude(document_request_id__isnull=False)
@@ -796,7 +796,7 @@ def get_content_type(file_extension):
 
 @login_required
 @hx_request_required
-@manager_can_enter("horilla_documents.add_document")
+@manager_can_enter("nephr_documents.add_document")
 def document_approve(request, id):
     """
     This function used to view the approve uploaded document.
@@ -821,7 +821,7 @@ def document_approve(request, id):
 
 @login_required
 @hx_request_required
-@manager_can_enter("horilla_documents.add_document")
+@manager_can_enter("nephr_documents.add_document")
 def document_reject(request, id):
     """
     This function used to view the reject uploaded document.
@@ -856,7 +856,7 @@ def document_reject(request, id):
 
 
 @login_required
-@manager_can_enter("horilla_documents.add_document")
+@manager_can_enter("nephr_documents.add_document")
 def document_bulk_approve(request):
     """
     This function used to view the approve uploaded document.
@@ -877,7 +877,7 @@ def document_bulk_approve(request):
 
 
 @login_required
-@manager_can_enter("horilla_documents.add_document")
+@manager_can_enter("nephr_documents.add_document")
 def document_bulk_reject(request):
     """
     This function used to view the reject uploaded document.
@@ -946,7 +946,7 @@ def paginator_qry(qryset, page_number):
     """
     This method is used to paginate query set
     """
-    paginator = HorillaPaginator(qryset, get_pagination())
+    paginator = NephrPaginator(qryset, get_pagination())
     qryset = paginator.get_page(page_number)
     return qryset
 
@@ -2023,7 +2023,7 @@ def replace_employee(request, emp_id):
                     and field_name == "recruitment_managers"
                     and str(emp_id) != replace_emp_id
                 ):
-                    Recruitment = get_horilla_model_class(
+                    Recruitment = get_nephr_model_class(
                         app_label="recruitment", model="recruitment"
                     )
                     recruitment_query = Recruitment.objects.filter(
@@ -2038,7 +2038,7 @@ def replace_employee(request, emp_id):
                     and field_name == "recruitment_stage_managers"
                     and str(emp_id) != replace_emp_id
                 ):
-                    Stage = get_horilla_model_class(
+                    Stage = get_nephr_model_class(
                         app_label="recruitment", model="stage"
                     )
                     recruitment_stage_query = Stage.objects.filter(
@@ -2053,7 +2053,7 @@ def replace_employee(request, emp_id):
                     and field_name == "onboarding_stage_manager"
                     and str(emp_id) != replace_emp_id
                 ):
-                    OnboardingStage = get_horilla_model_class(
+                    OnboardingStage = get_nephr_model_class(
                         app_label="onboarding", model="onboardingstage"
                     )
                     onboarding_stage_query = OnboardingStage.objects.filter(
@@ -2068,7 +2068,7 @@ def replace_employee(request, emp_id):
                     and field_name == "onboarding_task_manager"
                     and str(emp_id) != replace_emp_id
                 ):
-                    OnboardingTask = get_horilla_model_class(
+                    OnboardingTask = get_nephr_model_class(
                         app_label="onboarding", model="onboardingtask"
                     )
                     onboarding_task_query = OnboardingTask.objects.filter(
@@ -2730,7 +2730,7 @@ def work_info_export(request):
                 start_date = datetime.strptime(str(value), "%Y-%m-%d").date()
 
                 # Print the formatted date for each format
-                for format_name, format_string in HORILLA_DATE_FORMATS.items():
+                for format_name, format_string in NEPHR_DATE_FORMATS.items():
                     if format_name == date_format:
                         data = start_date.strftime(format_string)
 
@@ -2844,7 +2844,7 @@ def total_employees_count(request):
 def joining_today_count(request):
     newbies_today = 0
     if apps.is_installed("recruitment"):
-        Candidate = get_horilla_model_class(app_label="recruitment", model="candidate")
+        Candidate = get_nephr_model_class(app_label="recruitment", model="candidate")
         newbies_today = Candidate.objects.filter(
             joining_date__range=[date.today(), date.today() + timedelta(days=1)],
             is_active=True,
@@ -2856,7 +2856,7 @@ def joining_today_count(request):
 def joining_week_count(request):
     newbies_week = 0
     if apps.is_installed("recruitment"):
-        Candidate = get_horilla_model_class(app_label="recruitment", model="candidate")
+        Candidate = get_nephr_model_class(app_label="recruitment", model="candidate")
         newbies_week = Candidate.objects.filter(
             joining_date__range=[
                 date.today() - timedelta(days=date.today().weekday()),
@@ -3164,7 +3164,7 @@ def bonus_points_tab(request, emp_id):
     employee_obj = Employee.objects.get(id=emp_id)
     points = BonusPoint.objects.get(employee_id=emp_id)
     if apps.is_installed("payroll"):
-        Reimbursement = get_horilla_model_class(
+        Reimbursement = get_nephr_model_class(
             app_label="payroll", model="reimbursement"
         )
         requested_bonus_points = Reimbursement.objects.filter(
@@ -3277,7 +3277,7 @@ def redeem_points(request, emp_id):
 
     amount_for_bonus_point = 0
     if apps.is_installed("payroll"):
-        EncashmentGeneralSettings = get_horilla_model_class(
+        EncashmentGeneralSettings = get_nephr_model_class(
             app_label="payroll", model="encashmentgeneralsettings"
         )
         amount_for_bonus_point = (
@@ -3293,7 +3293,7 @@ def redeem_points(request, emp_id):
             points = form.cleaned_data["points"]
             amount = amount_for_bonus_point * points
             if apps.is_installed("payroll"):
-                Reimbursement = get_horilla_model_class(
+                Reimbursement = get_nephr_model_class(
                     app_label="payroll", model="reimbursement"
                 )
                 Reimbursement.objects.create(
@@ -3441,7 +3441,7 @@ def encashment_condition_create(request):
     if apps.is_installed("payroll"):
         from payroll.forms.forms import EncashmentGeneralSettingsForm
 
-        EncashmentGeneralSettings = get_horilla_model_class(
+        EncashmentGeneralSettings = get_nephr_model_class(
             app_label="payroll", model="encashmentgeneralsettings"
         )
         instance = (
